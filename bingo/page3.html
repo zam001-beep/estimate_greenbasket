@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>녹색바구니 영업 빙고 — 201위 ~ 300위</title>
+<style>
+  :root {
+    --bg: #f4f6f4;
+    --surface: #ffffff;
+    --ink: #1a2420;
+    --ink-2: #5a6a62;
+    --ink-3: #8a978f;
+    --line: #e2e8e3;
+    --accent: #1e7a46;
+    --accent-soft: #e3f2e9;
+    --accent-deep: #14532d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Pretendard", "Malgun Gothic", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; }
+
+  .topnav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .sub { font-size: 13px; color: var(--ink-2); }
+  .navbtns { display: flex; gap: 8px; }
+  .navbtn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; text-decoration: none;
+  }
+  .navbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .navbtn svg { width: 15px; height: 15px; }
+
+  /* 미니 대시보드 */
+  .dash {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 16px 0 20px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .tile .label { font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
+  .tile .value { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .tile .unit { font-size: 13px; font-weight: 600; color: var(--ink-3); margin-left: 2px; }
+  .tile .bar { margin-top: 10px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .tile .bar > div { height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width .25s ease; }
+
+  /* 페이지 탭 */
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab {
+    font-size: 13px; font-weight: 700; color: var(--ink-2); text-decoration: none;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px 10px 0 0; padding: 9px 18px;
+  }
+  .tab:hover { color: var(--accent); border-color: var(--accent); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .hint { font-size: 12.5px; color: var(--ink-2); }
+  button.reset {
+    font: inherit; font-size: 12.5px; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  button.reset:hover { color: #b91c1c; border-color: #fca5a5; }
+
+  /* 빙고판 */
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+  .cell {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 8px 8px;
+    min-height: 86px;
+    cursor: pointer;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: background .15s ease, border-color .15s ease, transform .05s ease;
+    user-select: none;
+  }
+  .cell:hover { border-color: var(--accent); }
+  .cell:active { transform: scale(0.97); }
+  .cell .rank { position: absolute; top: 6px; right: 8px; font-size: 10px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .cell .name {
+    font-size: 12px; font-weight: 700; line-height: 1.3;
+    word-break: keep-all; overflow-wrap: anywhere;
+    padding-right: 18px;
+  }
+  .cell .amt {
+    font-size: 12.5px; font-weight: 700; color: var(--ink-2);
+    font-variant-numeric: tabular-nums; margin-top: 6px;
+  }
+  .cell.done { background: var(--accent); border-color: var(--accent-deep); }
+  .cell.done .name { color: #ffffff; }
+  .cell.done .amt { color: #d7f0e2; }
+  .cell.done .rank { color: #a8d9bf; }
+  .cell.done::after {
+    content: "✓";
+    position: absolute; bottom: 6px; right: 8px;
+    font-size: 12px; font-weight: 800; color: #ffffff;
+  }
+  /* 완성된 빙고 줄에 속한 칸 */
+  .cell.done.line { background: var(--accent-deep); box-shadow: inset 0 0 0 2px #facc15; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+  @media (max-width: 520px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* 왼쪽 상단 뒤로가기 (플랫폼 홈) — 문서 플랫폼과 통일 */
+  .back-home {
+    position: fixed; top: 16px; left: 16px; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 12px;
+    background: #fff; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    text-decoration: none;
+  }
+  .back-home:hover { background: #f4f4f4; }
+  .back-home svg { width: 21px; height: 21px; }
+  @media (max-width: 1380px) { .topnav { padding-left: 56px; } }
+
+  /* 문의 옴(노란색) 상태 */
+  .cell.ask { background: #fef3c7; border-color: #f59e0b; }
+  .cell.ask .name { color: #92400e; }
+  .cell.ask .amt { color: #b45309; }
+  .cell.ask::after { content: "?"; position: absolute; bottom: 6px; right: 8px;
+                     font-size: 12px; font-weight: 800; color: #b45309; }
+  .tile .bar > .ask-bar { background: #f59e0b; }
+  /* 기관 검색 */
+  .searchbox { display: inline-flex; align-items: center; gap: 6px;
+               background: var(--surface); border: 1px solid var(--line);
+               border-radius: 10px; padding: 7px 12px; }
+  .searchbox svg { width: 15px; height: 15px; color: var(--ink-3); }
+  .searchbox input { border: none; outline: none; font-size: 13px; width: 190px;
+                     background: transparent; color: var(--ink); }
+  .cell.dimmed { opacity: .22; }
+  .cell.hit { box-shadow: 0 0 0 2px var(--accent); }
+  .search-results { font-size: 12.5px; color: var(--ink-2); margin: -4px 0 10px; }
+  .search-results a { color: var(--accent); font-weight: 700; text-decoration: none; margin-right: 12px; }
+  .search-results a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<a class="back-home" href="../" title="홈으로 돌아가기">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+</a>
+
+<div class="wrap">
+  <div class="topnav">
+    <header>
+      <h1>🧺 녹색바구니 영업 빙고</h1>
+      <span class="sub">공공기관 구매액 201위 ~ 300위 · 단위: 억원</span>
+    </header>
+  </div>
+
+  <section class="dash">
+    <div class="tile">
+      <div class="label">공공기관 수</div>
+      <div class="value" id="stat-total">100</div>
+    </div>
+    <div class="tile">
+      <div class="label">영업 성공</div>
+      <div class="value"><span id="stat-done">0</span><span class="unit">건</span></div>
+      <div class="bar"><div id="bar-done"></div></div>
+    </div>
+    <div class="tile">
+      <div class="label">문의 옴</div>
+      <div class="value"><span id="stat-ask">0</span><span class="unit">건</span></div>
+      <div class="bar"><div class="ask-bar" id="bar-ask"></div></div>
+    </div>
+    <div class="tile">
+      <div class="label">성공률</div>
+      <div class="value"><span id="stat-rate">0</span><span class="unit">%</span></div>
+    </div>
+  </section>
+
+  <nav class="tabs">
+    <a class="tab" href="index.html">1위 ~ 100위</a>
+    <a class="tab" href="page2.html">101위 ~ 200위</a>
+    <a class="tab active" href="page3.html">201위 ~ 300위</a>
+    <a class="tab" href="page4.html">301위 ~ 400위</a>
+    <a class="tab" href="page5.html">401위 ~ 491위</a>
+  </nav>
+
+  <div class="toolbar">
+    <span class="hint">칸 클릭: 문의 옴(노랑) → 영업 성공(초록) → 해제. 가로·세로·대각선 10칸 완성 시 빙고!</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label class="searchbox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search" placeholder="기관명 검색 (전체 491곳)">
+      </label>
+      <button class="reset" id="reset">이 페이지 초기화</button>
+    </div>
+  </div>
+  <div class="search-results" id="searchResults"></div>
+
+  <main class="grid" id="grid"></main>
+</div>
+
+<script>
+const DATA = [{"name": "한국데이터산업진흥원", "amount": 395.0}, {"name": "한국학중앙연구원", "amount": 395.0}, {"name": "한국해양교통안전공단", "amount": 392.0}, {"name": "대구경북첨단의료산업진흥재단", "amount": 391.0}, {"name": "국립대구과학관", "amount": 388.0}, {"name": "한국우편사업진흥원", "amount": 387.0}, {"name": "경상북도문화관광공사", "amount": 387.0}, {"name": "한국체육산업개발", "amount": 383.0}, {"name": "경기평택항만공사", "amount": 379.0}, {"name": "한국방송통신전파진흥원", "amount": 371.0}, {"name": "예금보험공사", "amount": 369.0}, {"name": "한국산업단지공단", "amount": 362.0}, {"name": "한국고용노동교육원", "amount": 362.0}, {"name": "한국공예디자인문화진흥원", "amount": 361.0}, {"name": "한국디자인진흥원", "amount": 357.0}, {"name": "평택도시공사", "amount": 339.0}, {"name": "경북대학교병원", "amount": 333.0}, {"name": "오송첨단의료산업진흥재단", "amount": 332.0}, {"name": "한국직업능력연구원", "amount": 330.0}, {"name": "충청남도개발공사", "amount": 317.0}, {"name": "한국보건복지인재원", "amount": 313.0}, {"name": "노사발전재단", "amount": 312.0}, {"name": "연구개발특구진흥재단", "amount": 309.0}, {"name": "의료기관평가인증원", "amount": 308.0}, {"name": "한국여성인권진흥원", "amount": 306.0}, {"name": "한국의약품안전관리원", "amount": 302.0}, {"name": "광주광역시도시공사", "amount": 302.0}, {"name": "아동권리보장원", "amount": 301.0}, {"name": "한국사학진흥재단", "amount": 301.0}, {"name": "한국소비자원", "amount": 300.0}, {"name": "북한이탈주민지원재단", "amount": 300.0}, {"name": "코레일관광개발", "amount": 300.0}, {"name": "경상남도창원시설공단", "amount": 295.0}, {"name": "전북개발공사", "amount": 294.0}, {"name": "주택관리공단", "amount": 291.0}, {"name": "전쟁기념사업회", "amount": 289.0}, {"name": "수원도시공사", "amount": 288.0}, {"name": "경상남도개발공사", "amount": 287.0}, {"name": "가축위생방역지원본부", "amount": 282.0}, {"name": "공영홈쇼핑", "amount": 281.0}, {"name": "한국문학번역원", "amount": 280.0}, {"name": "경기관광공사", "amount": 280.0}, {"name": "인천관광공사", "amount": 280.0}, {"name": "우체국물류지원단", "amount": 278.0}, {"name": "인천광역시연수구시설안전관리공단", "amount": 273.0}, {"name": "한국탄소산업진흥원", "amount": 271.0}, {"name": "한국방송광고진흥공사", "amount": 264.0}, {"name": "서울대학교치과병원", "amount": 260.0}, {"name": "한국교육과정평가원", "amount": 258.0}, {"name": "기초과학연구원", "amount": 257.0}, {"name": "광주시교통공사", "amount": 255.0}, {"name": "코레일네트웍스", "amount": 253.0}, {"name": "한국국제교류재단", "amount": 253.0}, {"name": "한국원자력안전재단", "amount": 252.0}, {"name": "천안도시공사", "amount": 252.0}, {"name": "항공안전기술원", "amount": 250.0}, {"name": "한국로봇산업진흥원", "amount": 246.0}, {"name": "해양수산과학기술진흥원", "amount": 246.0}, {"name": "사립학교교직원연금공단", "amount": 244.0}, {"name": "한국청소년활동진흥원", "amount": 241.0}, {"name": "한국보건사회연구원", "amount": 240.0}, {"name": "울산시도시공사", "amount": 239.0}, {"name": "국립호남권생물자원관", "amount": 238.0}, {"name": "한국원자력통제기술원", "amount": 238.0}, {"name": "영화진흥위원회", "amount": 237.0}, {"name": "충청북도청주시시설관리공단", "amount": 237.0}, {"name": "한국양성평등교육진흥원", "amount": 230.0}, {"name": "대구도시개발공사", "amount": 228.0}, {"name": "국토연구원", "amount": 227.0}, {"name": "한국해양조사협회", "amount": 223.0}, {"name": "국토교통과학기술진흥원", "amount": 222.0}, {"name": "코레일로지스", "amount": 221.0}, {"name": "경상국립대학교병원", "amount": 220.0}, {"name": "신용보증재단중앙회", "amount": 220.0}, {"name": "한국재정정보원", "amount": 219.0}, {"name": "한국도박문제관리센터", "amount": 217.0}, {"name": "한국해양과학기술원", "amount": 215.0}, {"name": "한국자활복지개발원", "amount": 212.0}, {"name": "코레일유통", "amount": 212.0}, {"name": "부천도시공사", "amount": 211.0}, {"name": "한국벤처투자", "amount": 210.0}, {"name": "시흥도시공사", "amount": 210.0}, {"name": "안산도시공사", "amount": 210.0}, {"name": "김해시도시개발공사", "amount": 209.0}, {"name": "한국법제연구원", "amount": 205.0}, {"name": "한국보건의료연구원", "amount": 202.0}, {"name": "인천광역시서구시설관리공단", "amount": 202.0}, {"name": "파주도시관광공사", "amount": 202.0}, {"name": "전라남도여수시도시관리공단", "amount": 200.0}, {"name": "에너지경제연구원", "amount": 199.0}, {"name": "한국한의약진흥원", "amount": 198.0}, {"name": "한국에너지기술평가원", "amount": 197.0}, {"name": "군포도시공사", "amount": 195.0}, {"name": "한국건강증진개발원", "amount": 194.0}, {"name": "충북대학교병원", "amount": 193.0}, {"name": "우체국금융개발원", "amount": 188.0}, {"name": "경상북도안동시시설관리공단", "amount": 186.0}, {"name": "한국사회복지협의회", "amount": 184.0}, {"name": "세종도시교통공사", "amount": 182.0}, {"name": "의왕도시공사", "amount": 182.0}];
+const OFFSET = 200;              // 이 페이지 첫 칸의 전체 순위 - 1
+const KEY = "greenbasket-bingo-p3";
+const N = 10;
+
+let done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]"));
+const AKEY = KEY + "-ask";
+let asked = new Set(JSON.parse(localStorage.getItem(AKEY) || "[]"));
+
+const grid = document.getElementById("grid");
+const fmt = (n) => n.toLocaleString("ko-KR");
+// 백만원 단위 값을 "956억 2,100만원" 형태로 변환
+const fmtEok = (mn) => {
+  const eok = Math.floor(mn / 100);        // 1억 = 100백만원
+  const man = Math.round((mn % 100) * 100); // 나머지 백만원 → 만원 단위
+  if (eok === 0) return `${fmt(man)}만원`;
+  if (man === 0) return `${fmt(eok)}억원`;
+  return `${fmt(eok)}억 ${fmt(man)}만원`;
+};
+
+DATA.forEach((d, i) => {
+  const rank = OFFSET + i + 1;
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  cell.dataset.i = i;
+  cell.title = `${rank}위 · ${d.name} · ${fmtEok(d.amount)}`;
+  cell.innerHTML =
+    `<span class="rank">${rank}</span>` +
+    `<span class="name">${d.name}</span>` +
+    `<span class="amt">${fmtEok(d.amount)}</span>`;
+  cell.addEventListener("click", () => {
+    /* 없음 → 문의 옴(노랑) → 영업 성공(초록) → 해제 순환 */
+    if (done.has(i)) { done.delete(i); }
+    else if (asked.has(i)) { asked.delete(i); done.add(i); }
+    else { asked.add(i); }
+    localStorage.setItem(KEY, JSON.stringify([...done]));
+    localStorage.setItem(AKEY, JSON.stringify([...asked]));
+    render();
+  });
+  grid.appendChild(cell);
+});
+
+function completedLines() {
+  const lines = [];
+  for (let r = 0; r < N; r++) lines.push([...Array(N)].map((_, c) => r * N + c)); // 가로
+  for (let c = 0; c < N; c++) lines.push([...Array(N)].map((_, r) => r * N + c)); // 세로
+  lines.push([...Array(N)].map((_, k) => k * N + k));            // 대각선 ↘
+  lines.push([...Array(N)].map((_, k) => k * N + (N - 1 - k)));  // 대각선 ↙
+  return lines.filter(line => line.every(i => done.has(i)));
+}
+
+function render() {
+  const lineCells = new Set(completedLines().flat());
+  grid.querySelectorAll(".cell").forEach((cell) => {
+    const i = +cell.dataset.i;
+    cell.classList.toggle("done", done.has(i));
+    cell.classList.toggle("ask", !done.has(i) && asked.has(i));
+    cell.classList.toggle("line", lineCells.has(i));
+  });
+  const cnt = done.size;
+  document.getElementById("stat-total").textContent = DATA.length;
+  document.getElementById("stat-done").textContent = cnt;
+  document.getElementById("stat-rate").textContent = ((cnt / DATA.length) * 100).toFixed(1);
+  document.getElementById("bar-done").style.width = (cnt / DATA.length) * 100 + "%";
+  const askCnt = [...asked].filter(i => !done.has(i)).length;
+  document.getElementById("stat-ask").textContent = askCnt;
+  document.getElementById("bar-ask").style.width = (askCnt / DATA.length) * 100 + "%";
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("이 페이지의 영업 기록(문의·성공)을 초기화할까요?")) return;
+  done = new Set();
+  asked = new Set();
+  localStorage.setItem(KEY, "[]");
+  localStorage.setItem(AKEY, "[]");
+  render();
+});
+
+/* ── 기관 검색 (전체 5개 페이지 대상) ── */
+const ALL_ORGS = [{"n":"강원랜드","r":1,"p":"index.html"},{"n":"한국도로공사","r":2,"p":"index.html"},{"n":"한국토지주택공사","r":3,"p":"index.html"},{"n":"한국농어촌공사","r":4,"p":"index.html"},{"n":"한국수력원자력","r":5,"p":"index.html"},{"n":"한국수자원공사","r":6,"p":"index.html"},{"n":"국가철도공단","r":7,"p":"index.html"},{"n":"한국철도공사","r":8,"p":"index.html"},{"n":"한국공항공사","r":9,"p":"index.html"},{"n":"인천국제공항공사","r":10,"p":"index.html"},{"n":"서울교통공사","r":11,"p":"index.html"},{"n":"한국환경공단","r":12,"p":"index.html"},{"n":"한국고용정보원","r":13,"p":"index.html"},{"n":"한국전력공사","r":14,"p":"index.html"},{"n":"전남대학교병원","r":15,"p":"index.html"},{"n":"한국가스공사","r":16,"p":"index.html"},{"n":"한국중부발전","r":17,"p":"index.html"},{"n":"한국에너지재단","r":18,"p":"index.html"},{"n":"한국동서발전","r":19,"p":"index.html"},{"n":"한전KPS","r":20,"p":"index.html"},{"n":"학교법인한국폴리텍","r":21,"p":"index.html"},{"n":"한국보훈복지의료공단","r":22,"p":"index.html"},{"n":"한국지능정보사회진흥원","r":23,"p":"index.html"},{"n":"한국서부발전","r":24,"p":"index.html"},{"n":"한국남동발전","r":25,"p":"index.html"},{"n":"한국지역난방공사","r":26,"p":"index.html"},{"n":"근로복지공단","r":27,"p":"index.html"},{"n":"한국교육학술정보원","r":28,"p":"index.html"},{"n":"한국남부발전","r":29,"p":"index.html"},{"n":"한국석유공사","r":30,"p":"index.html"},{"n":"한국인터넷진흥원","r":31,"p":"index.html"},{"n":"경기주택도시공사","r":32,"p":"index.html"},{"n":"대한적십자사","r":33,"p":"index.html"},{"n":"한국마사회","r":34,"p":"index.html"},{"n":"한국도로교통공단","r":35,"p":"index.html"},{"n":"한국콘텐츠진흥원","r":36,"p":"index.html"},{"n":"주식회사 에스알","r":37,"p":"index.html"},{"n":"서울주택도시공사","r":38,"p":"index.html"},{"n":"소상공인시장진흥공단","r":39,"p":"index.html"},{"n":"서울대학교병원","r":40,"p":"index.html"},{"n":"중소벤처기업진흥공단","r":41,"p":"index.html"},{"n":"부산대학교병원","r":42,"p":"index.html"},{"n":"국민건강보험공단","r":43,"p":"index.html"},{"n":"민주화운동기념사업회","r":44,"p":"index.html"},{"n":"국립공원공단","r":45,"p":"index.html"},{"n":"국민연금공단","r":46,"p":"index.html"},{"n":"수도권매립지관리공사","r":47,"p":"index.html"},{"n":"국민체육진흥공단","r":48,"p":"index.html"},{"n":"한국관광공사","r":49,"p":"index.html"},{"n":"한국사회적기업진흥원","r":50,"p":"index.html"},{"n":"건강보험심사평가원","r":51,"p":"index.html"},{"n":"서울시설공단","r":52,"p":"index.html"},{"n":"한국전력거래소","r":53,"p":"index.html"},{"n":"한국가스기술공사","r":54,"p":"index.html"},{"n":"한국가스안전공사","r":55,"p":"index.html"},{"n":"한전KDN","r":56,"p":"index.html"},{"n":"부산교통공사","r":57,"p":"index.html"},{"n":"한국산업안전보건공단","r":58,"p":"index.html"},{"n":"한국전력기술","r":59,"p":"index.html"},{"n":"부산항만공사","r":60,"p":"index.html"},{"n":"한국산업인력공단","r":61,"p":"index.html"},{"n":"해양환경공단","r":62,"p":"index.html"},{"n":"한국기술교육대학교","r":63,"p":"index.html"},{"n":"우체국시설관리단","r":64,"p":"index.html"},{"n":"한국수산자원공단","r":65,"p":"index.html"},{"n":"한국교통안전공단","r":66,"p":"index.html"},{"n":"한국농수산식품유통공사","r":67,"p":"index.html"},{"n":"국립암센터","r":68,"p":"index.html"},{"n":"한국환경산업기술원","r":69,"p":"index.html"},{"n":"대한무역투자진흥공사","r":70,"p":"index.html"},{"n":"인천교통공사","r":71,"p":"index.html"},{"n":"한국임업진흥원","r":72,"p":"index.html"},{"n":"국방과학연구소","r":73,"p":"index.html"},{"n":"한국전기안전공사","r":74,"p":"index.html"},{"n":"한국영상자료원","r":75,"p":"index.html"},{"n":"한국보건산업진흥원","r":76,"p":"index.html"},{"n":"한전원자력연료주식회사","r":77,"p":"index.html"},{"n":"대구교통공사","r":78,"p":"index.html"},{"n":"주택도시보증공사","r":79,"p":"index.html"},{"n":"한국어촌어항공단","r":80,"p":"index.html"},{"n":"대전도시공사","r":81,"p":"index.html"},{"n":"인천환경공단","r":82,"p":"index.html"},{"n":"충북개발공사","r":83,"p":"index.html"},{"n":"부산시설공단","r":84,"p":"index.html"},{"n":"제주특별자치도개발공사","r":85,"p":"index.html"},{"n":"국가유산진흥원","r":86,"p":"index.html"},{"n":"한국부동산원","r":87,"p":"index.html"},{"n":"서울농수산식품공사","r":88,"p":"index.html"},{"n":"인천항만공사","r":89,"p":"index.html"},{"n":"한국조폐공사","r":90,"p":"index.html"},{"n":"인천도시공사","r":91,"p":"index.html"},{"n":"서울물재생시설공단","r":92,"p":"index.html"},{"n":"한국사회보장정보원","r":93,"p":"index.html"},{"n":"정보통신산업진흥원","r":94,"p":"index.html"},{"n":"한국중소벤처기업유통원","r":95,"p":"index.html"},{"n":"한국장애인고용공단","r":96,"p":"index.html"},{"n":"여수광양항만공사","r":97,"p":"index.html"},{"n":"신용보증기금","r":98,"p":"index.html"},{"n":"중소기업은행","r":99,"p":"index.html"},{"n":"국토안전관리원","r":100,"p":"index.html"},{"n":"한국에너지공단","r":101,"p":"page2.html"},{"n":"한국연구재단","r":102,"p":"page2.html"},{"n":"축산물품질평가원","r":103,"p":"page2.html"},{"n":"국립생태원","r":104,"p":"page2.html"},{"n":"한국국제협력단","r":105,"p":"page2.html"},{"n":"기술보증기금","r":106,"p":"page2.html"},{"n":"제주대학교병원","r":107,"p":"page2.html"},{"n":"한국장학재단","r":108,"p":"page2.html"},{"n":"전남개발공사","r":109,"p":"page2.html"},{"n":"한국국토정보공사","r":110,"p":"page2.html"},{"n":"한국주택금융공사","r":111,"p":"page2.html"},{"n":"농림수산식품교육문화정보원","r":112,"p":"page2.html"},{"n":"한국문화예술위원회","r":113,"p":"page2.html"},{"n":"한국수출입은행","r":114,"p":"page2.html"},{"n":"한국산업기술기획평가원","r":115,"p":"page2.html"},{"n":"대구공공시설관리공단","r":116,"p":"page2.html"},{"n":"한국자산관리공사","r":117,"p":"page2.html"},{"n":"한국보건의료정보원","r":118,"p":"page2.html"},{"n":"경상북도개발공사","r":119,"p":"page2.html"},{"n":"인천시설공단","r":120,"p":"page2.html"},{"n":"한국원자력환경공단","r":121,"p":"page2.html"},{"n":"강원특별자치도개발공사","r":122,"p":"page2.html"},{"n":"전북대학교병원","r":123,"p":"page2.html"},{"n":"예술경영지원센터","r":124,"p":"page2.html"},{"n":"한국원자력안전기술원","r":125,"p":"page2.html"},{"n":"한국광해광업공단","r":126,"p":"page2.html"},{"n":"부산관광공사","r":127,"p":"page2.html"},{"n":"서민금융진흥원","r":128,"p":"page2.html"},{"n":"한국농업기술진흥원","r":129,"p":"page2.html"},{"n":"부산도시공사","r":130,"p":"page2.html"},{"n":"한국세라믹기술원","r":131,"p":"page2.html"},{"n":"한국교육개발원","r":132,"p":"page2.html"},{"n":"국립낙동강생물자원관","r":133,"p":"page2.html"},{"n":"건설근로자공제회","r":134,"p":"page2.html"},{"n":"부산환경공단","r":135,"p":"page2.html"},{"n":"고양도시관리공사","r":136,"p":"page2.html"},{"n":"울산항만공사","r":137,"p":"page2.html"},{"n":"대한체육회","r":138,"p":"page2.html"},{"n":"한국원자력의학원","r":139,"p":"page2.html"},{"n":"국방기술품질원","r":140,"p":"page2.html"},{"n":"한국소방산업기술원","r":141,"p":"page2.html"},{"n":"창업진흥원","r":142,"p":"page2.html"},{"n":"한국과학창의재단","r":143,"p":"page2.html"},{"n":"제주국제자유도시개발센터","r":144,"p":"page2.html"},{"n":"한국노인인력개발원","r":145,"p":"page2.html"},{"n":"한국식품산업클러스터진흥원","r":146,"p":"page2.html"},{"n":"공무원연금공단","r":147,"p":"page2.html"},{"n":"한국식품안전관리인증원","r":148,"p":"page2.html"},{"n":"서울에너지공사","r":149,"p":"page2.html"},{"n":"대구농수산물유통관리공사","r":150,"p":"page2.html"},{"n":"광명도시공사","r":151,"p":"page2.html"},{"n":"한국잡월드","r":152,"p":"page2.html"},{"n":"국가평생교육진흥원","r":153,"p":"page2.html"},{"n":"한국기상산업기술원","r":154,"p":"page2.html"},{"n":"한국언론진흥재단","r":155,"p":"page2.html"},{"n":"한국산업기술진흥원","r":156,"p":"page2.html"},{"n":"그랜드코리아레저","r":157,"p":"page2.html"},{"n":"한국수목원정원관리원","r":158,"p":"page2.html"},{"n":"한국보육진흥원","r":159,"p":"page2.html"},{"n":"광주도시관리공사","r":160,"p":"page2.html"},{"n":"한국산업기술시험원","r":161,"p":"page2.html"},{"n":"대전시시설관리공단","r":162,"p":"page2.html"},{"n":"과천도시공사","r":163,"p":"page2.html"},{"n":"울산시설공단","r":164,"p":"page2.html"},{"n":"충남대학교병원","r":165,"p":"page2.html"},{"n":"중소기업기술정보진흥원","r":166,"p":"page2.html"},{"n":"화성도시공사","r":167,"p":"page2.html"},{"n":"국립해양생물자원관","r":168,"p":"page2.html"},{"n":"한국해양수산연수원","r":169,"p":"page2.html"},{"n":"독립기념관","r":170,"p":"page2.html"},{"n":"남양주도시공사","r":171,"p":"page2.html"},{"n":"용인도시공사","r":172,"p":"page2.html"},{"n":"한국도로공사서비스","r":173,"p":"page2.html"},{"n":"서울특별시강남구도시관리공단","r":174,"p":"page2.html"},{"n":"광주광역시환경공단","r":175,"p":"page2.html"},{"n":"대전관광공사","r":176,"p":"page2.html"},{"n":"한국수자원조사기술원","r":177,"p":"page2.html"},{"n":"세종학당재단","r":178,"p":"page2.html"},{"n":"새만금개발공사","r":179,"p":"page2.html"},{"n":"한국환경보전원","r":180,"p":"page2.html"},{"n":"강원대학교병원","r":181,"p":"page2.html"},{"n":"한국문화예술교육진흥원","r":182,"p":"page2.html"},{"n":"한국저작권위원회","r":183,"p":"page2.html"},{"n":"시청자미디어재단","r":184,"p":"page2.html"},{"n":"한국해양진흥공사","r":185,"p":"page2.html"},{"n":"성남도시개발공사","r":186,"p":"page2.html"},{"n":"한국승강기안전공단","r":187,"p":"page2.html"},{"n":"한국국제보건의료재단","r":188,"p":"page2.html"},{"n":"구미도시공사","r":189,"p":"page2.html"},{"n":"광주광역시관광공사","r":190,"p":"page2.html"},{"n":"한국무역보험공사","r":191,"p":"page2.html"},{"n":"한국석유관리원","r":192,"p":"page2.html"},{"n":"한국발명진흥회","r":193,"p":"page2.html"},{"n":"세종특별자치시시설관리공단","r":194,"p":"page2.html"},{"n":"한국농촌경제연구원","r":195,"p":"page2.html"},{"n":"대전교통공사","r":196,"p":"page2.html"},{"n":"한국산림복지진흥원","r":197,"p":"page2.html"},{"n":"제주관광공사","r":198,"p":"page2.html"},{"n":"한국개발연구원","r":199,"p":"page2.html"},{"n":"충청남도아산시시설관리공단","r":200,"p":"page2.html"},{"n":"한국데이터산업진흥원","r":201,"p":"page3.html"},{"n":"한국학중앙연구원","r":202,"p":"page3.html"},{"n":"한국해양교통안전공단","r":203,"p":"page3.html"},{"n":"대구경북첨단의료산업진흥재단","r":204,"p":"page3.html"},{"n":"국립대구과학관","r":205,"p":"page3.html"},{"n":"한국우편사업진흥원","r":206,"p":"page3.html"},{"n":"경상북도문화관광공사","r":207,"p":"page3.html"},{"n":"한국체육산업개발","r":208,"p":"page3.html"},{"n":"경기평택항만공사","r":209,"p":"page3.html"},{"n":"한국방송통신전파진흥원","r":210,"p":"page3.html"},{"n":"예금보험공사","r":211,"p":"page3.html"},{"n":"한국산업단지공단","r":212,"p":"page3.html"},{"n":"한국고용노동교육원","r":213,"p":"page3.html"},{"n":"한국공예디자인문화진흥원","r":214,"p":"page3.html"},{"n":"한국디자인진흥원","r":215,"p":"page3.html"},{"n":"평택도시공사","r":216,"p":"page3.html"},{"n":"경북대학교병원","r":217,"p":"page3.html"},{"n":"오송첨단의료산업진흥재단","r":218,"p":"page3.html"},{"n":"한국직업능력연구원","r":219,"p":"page3.html"},{"n":"충청남도개발공사","r":220,"p":"page3.html"},{"n":"한국보건복지인재원","r":221,"p":"page3.html"},{"n":"노사발전재단","r":222,"p":"page3.html"},{"n":"연구개발특구진흥재단","r":223,"p":"page3.html"},{"n":"의료기관평가인증원","r":224,"p":"page3.html"},{"n":"한국여성인권진흥원","r":225,"p":"page3.html"},{"n":"한국의약품안전관리원","r":226,"p":"page3.html"},{"n":"광주광역시도시공사","r":227,"p":"page3.html"},{"n":"아동권리보장원","r":228,"p":"page3.html"},{"n":"한국사학진흥재단","r":229,"p":"page3.html"},{"n":"한국소비자원","r":230,"p":"page3.html"},{"n":"북한이탈주민지원재단","r":231,"p":"page3.html"},{"n":"코레일관광개발","r":232,"p":"page3.html"},{"n":"경상남도창원시설공단","r":233,"p":"page3.html"},{"n":"전북개발공사","r":234,"p":"page3.html"},{"n":"주택관리공단","r":235,"p":"page3.html"},{"n":"전쟁기념사업회","r":236,"p":"page3.html"},{"n":"수원도시공사","r":237,"p":"page3.html"},{"n":"경상남도개발공사","r":238,"p":"page3.html"},{"n":"가축위생방역지원본부","r":239,"p":"page3.html"},{"n":"공영홈쇼핑","r":240,"p":"page3.html"},{"n":"한국문학번역원","r":241,"p":"page3.html"},{"n":"경기관광공사","r":242,"p":"page3.html"},{"n":"인천관광공사","r":243,"p":"page3.html"},{"n":"우체국물류지원단","r":244,"p":"page3.html"},{"n":"인천광역시연수구시설안전관리공단","r":245,"p":"page3.html"},{"n":"한국탄소산업진흥원","r":246,"p":"page3.html"},{"n":"한국방송광고진흥공사","r":247,"p":"page3.html"},{"n":"서울대학교치과병원","r":248,"p":"page3.html"},{"n":"한국교육과정평가원","r":249,"p":"page3.html"},{"n":"기초과학연구원","r":250,"p":"page3.html"},{"n":"광주시교통공사","r":251,"p":"page3.html"},{"n":"코레일네트웍스","r":252,"p":"page3.html"},{"n":"한국국제교류재단","r":253,"p":"page3.html"},{"n":"한국원자력안전재단","r":254,"p":"page3.html"},{"n":"천안도시공사","r":255,"p":"page3.html"},{"n":"항공안전기술원","r":256,"p":"page3.html"},{"n":"한국로봇산업진흥원","r":257,"p":"page3.html"},{"n":"해양수산과학기술진흥원","r":258,"p":"page3.html"},{"n":"사립학교교직원연금공단","r":259,"p":"page3.html"},{"n":"한국청소년활동진흥원","r":260,"p":"page3.html"},{"n":"한국보건사회연구원","r":261,"p":"page3.html"},{"n":"울산시도시공사","r":262,"p":"page3.html"},{"n":"국립호남권생물자원관","r":263,"p":"page3.html"},{"n":"한국원자력통제기술원","r":264,"p":"page3.html"},{"n":"영화진흥위원회","r":265,"p":"page3.html"},{"n":"충청북도청주시시설관리공단","r":266,"p":"page3.html"},{"n":"한국양성평등교육진흥원","r":267,"p":"page3.html"},{"n":"대구도시개발공사","r":268,"p":"page3.html"},{"n":"국토연구원","r":269,"p":"page3.html"},{"n":"한국해양조사협회","r":270,"p":"page3.html"},{"n":"국토교통과학기술진흥원","r":271,"p":"page3.html"},{"n":"코레일로지스","r":272,"p":"page3.html"},{"n":"경상국립대학교병원","r":273,"p":"page3.html"},{"n":"신용보증재단중앙회","r":274,"p":"page3.html"},{"n":"한국재정정보원","r":275,"p":"page3.html"},{"n":"한국도박문제관리센터","r":276,"p":"page3.html"},{"n":"한국해양과학기술원","r":277,"p":"page3.html"},{"n":"한국자활복지개발원","r":278,"p":"page3.html"},{"n":"코레일유통","r":279,"p":"page3.html"},{"n":"부천도시공사","r":280,"p":"page3.html"},{"n":"한국벤처투자","r":281,"p":"page3.html"},{"n":"시흥도시공사","r":282,"p":"page3.html"},{"n":"안산도시공사","r":283,"p":"page3.html"},{"n":"김해시도시개발공사","r":284,"p":"page3.html"},{"n":"한국법제연구원","r":285,"p":"page3.html"},{"n":"한국보건의료연구원","r":286,"p":"page3.html"},{"n":"인천광역시서구시설관리공단","r":287,"p":"page3.html"},{"n":"파주도시관광공사","r":288,"p":"page3.html"},{"n":"전라남도여수시도시관리공단","r":289,"p":"page3.html"},{"n":"에너지경제연구원","r":290,"p":"page3.html"},{"n":"한국한의약진흥원","r":291,"p":"page3.html"},{"n":"한국에너지기술평가원","r":292,"p":"page3.html"},{"n":"군포도시공사","r":293,"p":"page3.html"},{"n":"한국건강증진개발원","r":294,"p":"page3.html"},{"n":"충북대학교병원","r":295,"p":"page3.html"},{"n":"우체국금융개발원","r":296,"p":"page3.html"},{"n":"경상북도안동시시설관리공단","r":297,"p":"page3.html"},{"n":"한국사회복지협의회","r":298,"p":"page3.html"},{"n":"세종도시교통공사","r":299,"p":"page3.html"},{"n":"의왕도시공사","r":300,"p":"page3.html"},{"n":"대한장애인체육회","r":301,"p":"page4.html"},{"n":"부산대학교치과병원","r":302,"p":"page4.html"},{"n":"한국청소년정책연구원","r":303,"p":"page4.html"},{"n":"단양관광공사","r":304,"p":"page4.html"},{"n":"한국산업은행","r":305,"p":"page4.html"},{"n":"경상남도밀양시시설관리공단","r":306,"p":"page4.html"},{"n":"서울특별시관악구시설관리공단","r":307,"p":"page4.html"},{"n":"국립항공박물관","r":308,"p":"page4.html"},{"n":"한국건강가정진흥원","r":309,"p":"page4.html"},{"n":"서울특별시영등포구시설관리공단","r":310,"p":"page4.html"},{"n":"장수한우지방공사","r":311,"p":"page4.html"},{"n":"식품안전정보원","r":312,"p":"page4.html"},{"n":"코레일테크","r":313,"p":"page4.html"},{"n":"문경관광공사","r":314,"p":"page4.html"},{"n":"장애인기업종합지원센터","r":315,"p":"page4.html"},{"n":"한국문화관광연구원","r":316,"p":"page4.html"},{"n":"국가생명윤리정책원","r":317,"p":"page4.html"},{"n":"건설기술교육원","r":318,"p":"page4.html"},{"n":"한전MCS","r":319,"p":"page4.html"},{"n":"한국조세재정연구원","r":320,"p":"page4.html"},{"n":"강원특별자치도속초시시설관리공단","r":321,"p":"page4.html"},{"n":"충청남도보령시시설관리공단","r":322,"p":"page4.html"},{"n":"한국보건의료인국가시험원","r":323,"p":"page4.html"},{"n":"춘천도시공사","r":324,"p":"page4.html"},{"n":"한식진흥원","r":325,"p":"page4.html"},{"n":"양평공사","r":326,"p":"page4.html"},{"n":"태권도진흥재단","r":327,"p":"page4.html"},{"n":"한국예술인복지재단","r":328,"p":"page4.html"},{"n":"구리농수산물공사","r":329,"p":"page4.html"},{"n":"한국장애인개발원","r":330,"p":"page4.html"},{"n":"안양도시공사","r":331,"p":"page4.html"},{"n":"한국여성정책연구원","r":332,"p":"page4.html"},{"n":"대구달성군시설관리공단","r":333,"p":"page4.html"},{"n":"국악방송","r":334,"p":"page4.html"},{"n":"중소벤처기업연구원","r":335,"p":"page4.html"},{"n":"한국원산지정보원","r":336,"p":"page4.html"},{"n":"게임물관리위원회","r":337,"p":"page4.html"},{"n":"서울특별시성북구도시관리공단","r":338,"p":"page4.html"},{"n":"함안지방공사","r":339,"p":"page4.html"},{"n":"농업정책보험금융원","r":340,"p":"page4.html"},{"n":"서울특별시용산구시설관리공단","r":341,"p":"page4.html"},{"n":"경상남도창원레포츠파크","r":342,"p":"page4.html"},{"n":"국립광주과학관","r":343,"p":"page4.html"},{"n":"농림식품기술기획평가원","r":344,"p":"page4.html"},{"n":"경상남도양산시시설관리공단","r":345,"p":"page4.html"},{"n":"한국특허전략개발원","r":346,"p":"page4.html"},{"n":"경기도가평군시설관리공단","r":347,"p":"page4.html"},{"n":"한국문화정보원","r":348,"p":"page4.html"},{"n":"영양고추유통공사","r":349,"p":"page4.html"},{"n":"국립중앙의료원","r":350,"p":"page4.html"},{"n":"울산광역시남구도시관리공단","r":351,"p":"page4.html"},{"n":"한국상하수도협회","r":352,"p":"page4.html"},{"n":"한국지식재산연구원","r":353,"p":"page4.html"},{"n":"경기교통공사","r":354,"p":"page4.html"},{"n":"양주도시공사","r":355,"p":"page4.html"},{"n":"국방전직교육원","r":356,"p":"page4.html"},{"n":"하남도시공사","r":357,"p":"page4.html"},{"n":"한국환경연구원","r":358,"p":"page4.html"},{"n":"서울특별시양천구시설관리공단","r":359,"p":"page4.html"},{"n":"경기도안성시시설관리공단","r":360,"p":"page4.html"},{"n":"한국저작권보호원","r":361,"p":"page4.html"},{"n":"사천시시설관리공단","r":362,"p":"page4.html"},{"n":"국립해양과학관","r":363,"p":"page4.html"},{"n":"산업연구원","r":364,"p":"page4.html"},{"n":"한국법무보호복지공단","r":365,"p":"page4.html"},{"n":"광주광산구시설관리공단","r":366,"p":"page4.html"},{"n":"서울특별시중구시설관리공단","r":367,"p":"page4.html"},{"n":"울주군시설관리공단","r":368,"p":"page4.html"},{"n":"영상물등급위원회","r":369,"p":"page4.html"},{"n":"강릉관광개발공사","r":370,"p":"page4.html"},{"n":"구리도시공사","r":371,"p":"page4.html"},{"n":"서울특별시종로구시설관리공단","r":372,"p":"page4.html"},{"n":"제주에너지공사","r":373,"p":"page4.html"},{"n":"대한건설기계안전관리원","r":374,"p":"page4.html"},{"n":"광주광역시서구시설관리공단","r":375,"p":"page4.html"},{"n":"거제해양관광개발공사","r":376,"p":"page4.html"},{"n":"공간정보품질관리원","r":377,"p":"page4.html"},{"n":"한국전력국제원자력대학원대학교","r":378,"p":"page4.html"},{"n":"한국출판문화산업진흥원","r":379,"p":"page4.html"},{"n":"경상북도영천시시설관리공단","r":380,"p":"page4.html"},{"n":"의정부도시공사","r":381,"p":"page4.html"},{"n":"한국특허정보원","r":382,"p":"page4.html"},{"n":"인천광역시미추홀구시설관리공단","r":383,"p":"page4.html"},{"n":"한국에너지정보문화재단","r":384,"p":"page4.html"},{"n":"강원특별자치도원주시시설관리공단","r":385,"p":"page4.html"},{"n":"국립부산과학관","r":386,"p":"page4.html"},{"n":"부산광역시남구시설관리공단","r":387,"p":"page4.html"},{"n":"김포도시관리공사","r":388,"p":"page4.html"},{"n":"경상남도창녕군시설관리공단","r":389,"p":"page4.html"},{"n":"통일연구원","r":390,"p":"page4.html"},{"n":"한국지식재산보호원","r":391,"p":"page4.html"},{"n":"한국청소년상담복지개발원","r":392,"p":"page4.html"},{"n":"서울특별시성동구도시관리공단","r":393,"p":"page4.html"},{"n":"서울특별시송파구시설관리공단","r":394,"p":"page4.html"},{"n":"무역안보관리원","r":395,"p":"page4.html"},{"n":"서울특별시서대문구도시관리공단","r":396,"p":"page4.html"},{"n":"한국국방연구원","r":397,"p":"page4.html"},{"n":"한국제품안전관리원","r":398,"p":"page4.html"},{"n":"서울특별시마포구시설관리공단","r":399,"p":"page4.html"},{"n":"한국해외인프라도시개발지원공사","r":400,"p":"page4.html"},{"n":"경상남도합천군시설관리공단","r":401,"p":"page5.html"},{"n":"한국특허기술진흥원","r":402,"p":"page5.html"},{"n":"충청북도충주시시설관리공단","r":403,"p":"page5.html"},{"n":"오산도시공사","r":404,"p":"page5.html"},{"n":"인천광역시남동구도시관리공단","r":405,"p":"page5.html"},{"n":"한국의료기기안전정보원","r":406,"p":"page5.html"},{"n":"국제식물검역인증원","r":407,"p":"page5.html"},{"n":"경상북도경주시시설관리공단","r":408,"p":"page5.html"},{"n":"광주광역시북구시설관리공단","r":409,"p":"page5.html"},{"n":"경상북도포항시설관리공단","r":410,"p":"page5.html"},{"n":"예술의전당","r":411,"p":"page5.html"},{"n":"울산광역시북구시설관리공단","r":412,"p":"page5.html"},{"n":"전북특별자치도전주시시설관리공단","r":413,"p":"page5.html"},{"n":"한국항로표지기술원","r":414,"p":"page5.html"},{"n":"여주도시공사","r":415,"p":"page5.html"},{"n":"국립해양박물관","r":416,"p":"page5.html"},{"n":"경상북도김천시시설관리공단","r":417,"p":"page5.html"},{"n":"한국공공조직은행","r":418,"p":"page5.html"},{"n":"서울특별시은평구시설관리공단","r":419,"p":"page5.html"},{"n":"강원특별자치도정선군시설관리공단","r":420,"p":"page5.html"},{"n":"재외동포협력센터","r":421,"p":"page5.html"},{"n":"한국형사·법무정책연구원","r":422,"p":"page5.html"},{"n":"인천광역시강화군시설관리공단","r":423,"p":"page5.html"},{"n":"부산광역시기장군도시관리공단","r":424,"p":"page5.html"},{"n":"경기도연천군시설관리공단","r":425,"p":"page5.html"},{"n":"남북교류협력지원협회","r":426,"p":"page5.html"},{"n":"정부법무공단","r":427,"p":"page5.html"},{"n":"서울특별시금천구시설관리공단","r":428,"p":"page5.html"},{"n":"건축공간연구원","r":429,"p":"page5.html"},{"n":"동북아역사재단","r":430,"p":"page5.html"},{"n":"한국장기조직기증원","r":431,"p":"page5.html"},{"n":"차세대수치예보모델개발사업단","r":432,"p":"page5.html"},{"n":"서울특별시노원구시설관리공단","r":433,"p":"page5.html"},{"n":"한국등산트레킹지원센터","r":434,"p":"page5.html"},{"n":"서울특별시도봉구시설관리공단","r":435,"p":"page5.html"},{"n":"인천광역시중구시설관리공단","r":436,"p":"page5.html"},{"n":"경기도이천시시설관리공단","r":437,"p":"page5.html"},{"n":"한국해양수산개발원","r":438,"p":"page5.html"},{"n":"서울특별시강동구도시관리공단","r":439,"p":"page5.html"},{"n":"서울특별시구로구시설관리공단","r":440,"p":"page5.html"},{"n":"경상남도진주시시설관리공단","r":441,"p":"page5.html"},{"n":"통영관광개발공사","r":442,"p":"page5.html"},{"n":"한국행정연구원","r":443,"p":"page5.html"},{"n":"전북특별자치도익산시도시관리공단","r":444,"p":"page5.html"},{"n":"포천도시공사","r":445,"p":"page5.html"},{"n":"경제인문사회연구회","r":446,"p":"page5.html"},{"n":"서울특별시강서구시설관리공단","r":447,"p":"page5.html"},{"n":"인천광역시부평구시설관리공단","r":448,"p":"page5.html"},{"n":"축산환경관리원","r":449,"p":"page5.html"},{"n":"서울특별시동대문구시설관리공단","r":450,"p":"page5.html"},{"n":"한국고전번역원","r":451,"p":"page5.html"},{"n":"88관광개발","r":452,"p":"page5.html"},{"n":"대외경제정책연구원","r":453,"p":"page5.html"},{"n":"정보통신정책연구원","r":454,"p":"page5.html"},{"n":"한국나노기술원","r":455,"p":"page5.html"},{"n":"경기도동두천시시설관리공단","r":456,"p":"page5.html"},{"n":"충청남도부여군시설관리공단","r":457,"p":"page5.html"},{"n":"대한법률구조공단","r":458,"p":"page5.html"},{"n":"서울특별시강북구도시관리공단","r":459,"p":"page5.html"},{"n":"전라남도완도해양치유관리공단","r":460,"p":"page5.html"},{"n":"울산광역시중구도시관리공단","r":461,"p":"page5.html"},{"n":"아시아태평양경제협력체기후센터","r":462,"p":"page5.html"},{"n":"일제강제동원피해자지원재단","r":463,"p":"page5.html"},{"n":"한국의료분쟁조정중재원","r":464,"p":"page5.html"},{"n":"서울특별시광진구시설관리공단","r":465,"p":"page5.html"},{"n":"서울특별시동작구시설관리공단","r":466,"p":"page5.html"},{"n":"한국여성과학기술인육성재단","r":467,"p":"page5.html"},{"n":"한국교통연구원","r":468,"p":"page5.html"},{"n":"서울특별시중랑구시설관리공단","r":469,"p":"page5.html"},{"n":"한국과학기술기획평가원","r":470,"p":"page5.html"},{"n":"한국마약퇴치운동본부","r":471,"p":"page5.html"},{"n":"강원특별자치도평창군시설관리공단","r":472,"p":"page5.html"},{"n":"국제방송교류재단","r":473,"p":"page5.html"},{"n":"강원특별자치도동해시시설관리공단","r":474,"p":"page5.html"},{"n":"국립박물관문화재단","r":475,"p":"page5.html"},{"n":"강원특별자치도태백시시설관리공단","r":476,"p":"page5.html"},{"n":"경북대학교치과병원","r":477,"p":"page5.html"},{"n":"한국투자공사","r":478,"p":"page5.html"},{"n":"인천광역시계양구시설관리공단","r":479,"p":"page5.html"},{"n":"강릉원주대학교치과병원","r":480,"p":"page5.html"},{"n":"한국노동연구원","r":481,"p":"page5.html"},{"n":"과학기술정책연구원","r":482,"p":"page5.html"},{"n":"청도공영사업공사","r":483,"p":"page5.html"},{"n":"한국치산기술협회","r":484,"p":"page5.html"},{"n":"대한석탄공사","r":485,"p":"page5.html"},{"n":"강원특별자치도영월군시설관리공단","r":486,"p":"page5.html"},{"n":"한국공정거래조정원","r":487,"p":"page5.html"},{"n":"과학기술일자리진흥원","r":488,"p":"page5.html"},{"n":"한국통계정보원","r":489,"p":"page5.html"},{"n":"한국문화진흥주식회사","r":490,"p":"page5.html"},{"n":"당진도시공사","r":491,"p":"page5.html"}];
+const PAGE_LABELS = { "index.html": "1~100위", "page2.html": "101~200위", "page3.html": "201~300위", "page4.html": "301~400위", "page5.html": "401~491위" };
+const THIS_PAGE = ["index.html", "page2.html", "page3.html", "page4.html", "page5.html"][Math.floor(OFFSET / 100)];
+const searchInput = document.getElementById("search");
+const resultsBox = document.getElementById("searchResults");
+function applySearch() {
+  const q = searchInput.value.trim();
+  let first = null, hits = 0;
+  grid.querySelectorAll(".cell").forEach((cell) => {
+    const name = DATA[+cell.dataset.i].name;
+    const hit = !!q && name.includes(q);
+    cell.classList.toggle("hit", hit);
+    cell.classList.toggle("dimmed", !!q && !hit);
+    if (hit) { hits++; if (!first) first = cell; }
+  });
+  if (!q) { resultsBox.innerHTML = ""; return; }
+  const others = ALL_ORGS.filter(o => o.n.includes(q) && o.p !== THIS_PAGE);
+  let html = "이 페이지에서 " + hits + "곳";
+  if (others.length) {
+    html += " · 다른 페이지: " + others.slice(0, 12).map(o =>
+      '<a href="' + o.p + '?q=' + encodeURIComponent(q) + '">' + o.n + " (" + o.r + "위)</a>").join("");
+    if (others.length > 12) html += " 외 " + (others.length - 12) + "곳";
+  } else if (!hits) {
+    html += " · 다른 페이지에도 없음";
+  }
+  resultsBox.innerHTML = html;
+  if (first) first.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+searchInput.addEventListener("input", applySearch);
+const q0 = new URLSearchParams(location.search).get("q");
+if (q0) searchInput.value = q0;
+
+render();
+if (q0) applySearch();
+</script>
+</body>
+</html>
