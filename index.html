@@ -1213,7 +1213,7 @@
   <form onsubmit="cloudLogin(); return false;">
     <img id="gateLogo" alt="">
     <div class="lg-title">녹색바구니 문서</div>
-    <div class="lg-sub">팀 비밀번호를 입력하세요.<br>한 번 로그인하면 이 브라우저에서는 계속 유지됩니다.</div>
+    <div class="lg-sub">팀 계정으로 로그인하세요.<br>한 번 로그인하면 이 브라우저에서는 계속 유지됩니다.</div>
     <input type="email" id="cloudEmail" placeholder="팀 계정 이메일" autocomplete="username">
     <input type="password" id="cloudPw" placeholder="비밀번호" autocomplete="current-password">
     <button type="submit" id="gateBtn">로그인</button>
@@ -1731,7 +1731,7 @@ document.addEventListener('click', e => {
 const CLOUD = {
   url: 'https://ttbqxvelangwmfqfztqf.supabase.co',    /* Supabase Project URL — 예: https://abcdefgh.supabase.co */
   key: 'sb_publishable_uUlmgdA_eeNBsB8HuJrjig_k4igu70A',    /* Supabase anon(publishable) 키. 공개돼도 되는 키다. service_role(secret) 키는 절대 넣지 말 것 */
-  email: 'timbomanager@gmail.com',  /* 팀 공용 계정 이메일. 넣어두면 팀원은 비밀번호만 입력한다 */
+  email: '',  /* 팀 공용 계정 이메일. 넣어두면 팀원은 비밀번호만 입력한다 */
 };
 const CLOUD_SESSION = 'greenbasket_cloud_session', CLOUD_MIGRATED = 'greenbasket_cloud_migrated', CLOUD_DELETES = 'greenbasket_cloud_deletes';
 const cloudOn = () => !!(CLOUD.url && CLOUD.key);
