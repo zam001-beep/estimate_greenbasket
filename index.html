@@ -859,6 +859,10 @@
   body.theme-green .summary .srow .svalue { flex: 1; text-align: right; padding: 9px 12px; }
   body.theme-green .summary .srow.total { background: #fff; color: #111; margin: 0; border: none; }
   body.theme-green .summary .srow.total .svalue { font-size: 13.5px; font-weight: 800; }
+  /* 절삭 할인이 있으면 칸이 5개가 되어 한 줄에 다 안 들어간다 → 제목을 위, 금액을 아래로 쌓아 폭을 줄인다 */
+  body.theme-green .summary.has-cut .srow { flex-direction: column; min-width: 0; }
+  body.theme-green .summary.has-cut .srow .slabel { border-right: none; border-bottom: 1px solid #888; justify-content: center; padding: 7px 6px; }
+  body.theme-green .summary.has-cut .srow .svalue { flex: none; text-align: center; padding: 9px 6px; white-space: nowrap; }
   body.theme-green.est-mode .notes {
     order: 2;
     display: flex;
@@ -1269,10 +1273,10 @@
         <button class="mini-btn" onclick="togglePartyBox('rcv')">거래처 불러오기</button>
       </div>
       <div class="partner-box" id="partnerBox"></div>
-      <div class="company" id="rcvName" contenteditable="true">국민건강보험공단 양평지사</div>
+      <div class="company" id="rcvName" contenteditable="true"></div>
       <div class="row"><div class="label">사업자</div><div class="value" id="rcvBiz" contenteditable="true"></div></div>
-      <div class="row"><div class="label">수신자</div><div class="value" id="rcvPerson" contenteditable="true">.</div></div>
-      <div class="row"><div class="label">이메일</div><div class="value" id="rcvEmail" contenteditable="true">250853@nhis.or.kr</div></div>
+      <div class="row"><div class="label">수신자</div><div class="value" id="rcvPerson" contenteditable="true"></div></div>
+      <div class="row"><div class="label">이메일</div><div class="value" id="rcvEmail" contenteditable="true"></div></div>
       <div class="row"><div class="label">주소</div><div class="value" id="rcvAddr" contenteditable="true"></div></div>
     </div>
   </div>
