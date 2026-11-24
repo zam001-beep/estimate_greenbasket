@@ -3215,7 +3215,12 @@ function saveRecord(fileName) {
     savedAt: new Date().toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }),
     state: getState(),
   });
-  localStorage.setItem(HKEY, JSON.stringify(list.slice(0, 20)));
+  /* 저장소가 가득 차면(도장 이미지가 기록마다 들어가 커진다) 오래된 기록부터 버리고 다시 시도.
+     끝내 실패해도 인쇄는 막지 않는다 */
+  for (let n = Math.min(list.length, 20); n > 0; n--) {
+    try { localStorage.setItem(HKEY, JSON.stringify(list.slice(0, n))); return; } catch (e) {}
+  }
+  setStatus('err', '브라우저 저장 공간이 가득 차서 이번 발행 기록은 저장하지 못했습니다. 인쇄는 정상적으로 진행됩니다.');
 }
 
 /* 이전 기록: 새 탭으로 열기 */
