@@ -1760,7 +1760,7 @@ async function cloudAuth(grant, body) {
     method: 'POST', headers: { apikey: CLOUD.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   });
   const j = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = new Error(j.msg || j.error_description || j.message || ('서버 응답 ' + res.status)); e.status = res.status; throw e; }
+  if (!res.ok) { const e = new Error(j.msg || j.error_description || j.message || ('서버 응답 ' + res.status)); e.status = res.status; e.code = j.error_code; throw e; }
   return j;
 }
 /* 로그인 토큰은 1시간짜리라 만료 직전이면 새로 받아온다. 새로 받기가 거절되면 로그아웃 상태로 돌린다 */
@@ -1889,7 +1889,7 @@ async function cloudLogin() {
   $id('gateErr').textContent = ''; $id('gateBtn').disabled = true; $id('gateBtn').textContent = '로그인 중…';
   try { cloudSetSession(await cloudAuth('password', { email, password: pw })); }
   catch (e) {
-    fail(e.status === 400 ? '이메일 또는 비밀번호가 맞지 않습니다.' : e.status ? `로그인하지 못했습니다. (${e.message})` : '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.');
+    fail(e.code === 'email_not_confirmed' ? '이 계정은 아직 이메일 인증이 안 되어 로그인할 수 없습니다. 관리자에게 알려주세요.' : e.status === 400 ? '이메일 또는 비밀번호가 맞지 않습니다.' : e.status ? `로그인하지 못했습니다. (${e.message})` : '서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.');
     return;
   }
   $id('gateBtn').disabled = false; $id('gateBtn').textContent = '로그인';
